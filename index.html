@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Math Practice</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      width: 375px;
+      height: 667px;
+      margin: 0 auto;
+      overflow: hidden;
+      background-color: #1a1a1a;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+  </style>
+</head>
+<body class="flex flex-col items-center justify-between h-full p-4">
+  <div class="text-center">
+    <h1 class="text-2xl font-bold mb-2">Math Practice</h1>
+    <p class="text-lg">Streak: <span id="streak">0</span></p>
+    <p class="text-sm text-gray-400">Time: <span id="timer">5</span>s</p>
+  </div>
+  <div id="question" class="text-4xl font-bold"></div>
+  <div id="answers" class="grid grid-cols-5 gap-2 w-full"></div>
+
+  <script>
+    const questionEl = document.getElementById('question');
+    const answersEl = document.getElementById('answers');
+    const streakEl = document.getElementById('streak');
+    const timerEl = document.getElementById('timer');
+    let streak = 0;
+    let timer;
+    let timeLeft = 5;
+
+    function generateProblem() {
+      const num1 = Math.floor(Math.random() * 9) + 1;
+      const num2 = Math.floor(Math.random() * 9) + 1;
+      const op = Math.random() < 0.5 ? '+' : '×';
+      const correctAnswer = op === '+' ? num1 + num2 : num1 * num2;
+      const answers = [correctAnswer];
+      while (answers.length < 10) {
+        const wrong = correctAnswer + (Math.floor(Math.random() * 20) - 10);
+        if (wrong > 0 && !answers.includes(wrong)) answers.push(wrong);
+      }
+      answers.sort(() => Math.random() - 0.5);
+      return { num1, num2, op, correctAnswer, answers };
+    }
+
+    function displayProblem() {
+      const { num1, num2, op, correctAnswer, answers } = generateProblem();
+      questionEl.textContent = `${num1} ${op} ${num2} = ?`;
+      answersEl.innerHTML = '';
+      answers.forEach(answer => {
+        const btn = document.createElement('button');
+        btn.textContent = answer;
+        btn.className = 'bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded';
+        btn.onclick = () => handleAnswer(answer, correctAnswer);
+        answersEl.appendChild(btn);
+      });
+      startTimer();
+    }
+
+    function handleAnswer(selected, correct) {
+      clearInterval(timer);
+      if (selected === correct) {
+        streak++;
+        streakEl.textContent = streak;
+        flashGreen();
+        setTimeout(displayProblem, 1500);
+      } else {
+        streak = 0;
+        streakEl.textContent = streak;
+        displayProblem();
+      }
+    }
+
+    function flashGreen() {
+      let flashes = 0;
+      const flashInterval = setInterval(() => {
+        questionEl.className = `text-4xl font-bold ${flashes % 2 === 0 ? 'text-green-400' : 'text-white'}`;
+        flashes++;
+        if (flashes >= 6) {
+          clearInterval(flashInterval);
+          questionEl.className = 'text-4xl font-bold';
+        }
+      }, 250);
+    }
+
+    function startTimer() {
+      timeLeft = 5;
+      timerEl.textContent = timeLeft;
+      timer = setInterval(() => {
+        timeLeft--;
+        timerEl.textContent = timeLeft;
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          streak = 0;
+          streakEl.textContent = streak;
+          displayProblem();
+        }
+      }, 1000);
+    }
+
+    displayProblem();
+  </script>
+</body>
+</html>
