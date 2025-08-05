@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -17,14 +16,15 @@
     }
   </style>
 </head>
-<body class="flex flex-col items-center justify-between h-full p-4">
+<body class="flex flex-col items-center justify-between hbaselines h-full p-4">
   <div class="text-center">
     <h1 class="text-2xl font-bold mb-2">Math Practice</h1>
     <p class="text-lg">Streak: <span id="streak">0</span></p>
     <p class="text-sm text-gray-400">Time: <span id="timer">5</span>s</p>
   </div>
-  <div id="question" class="text-4xl font-bold my-16"></div>
+  <div id="question" class="text-4xl font-bold my-8"></div>
   <div id="answers" class="grid grid-cols-5 gap-2 w-full"></div>
+
 
   <script>
     const questionEl = document.getElementById('question');
@@ -34,6 +34,7 @@
     let streak = 0;
     let timer;
     let timeLeft = 5;
+    let correctButton = null;
 
     function generateProblem() {
       const num1 = Math.floor(Math.random() * 9) + 1;
@@ -53,11 +54,13 @@
       const { num1, num2, op, correctAnswer, answers } = generateProblem();
       questionEl.textContent = `${num1} ${op} ${num2} = ?`;
       answersEl.innerHTML = '';
+      correctButton = null;
       answers.forEach(answer => {
         const btn = document.createElement('button');
         btn.textContent = answer;
         btn.className = 'bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded';
         btn.onclick = () => handleAnswer(answer, correctAnswer);
+        if (answer === correctAnswer) correctButton = btn;
         answersEl.appendChild(btn);
       });
       startTimer();
@@ -73,7 +76,8 @@
       } else {
         streak = 0;
         streakEl.textContent = streak;
-        displayProblem();
+        flashRed();
+        setTimeout(displayProblem, 1500);
       }
     }
 
@@ -89,6 +93,18 @@
       }, 250);
     }
 
+    function flashRed() {
+      let flashes = 0;
+      const flashInterval = setInterval(() => {
+        correctButton.className = `font-bold py-2 px-4 rounded ${flashes % 2 === 0 ? 'bg-red-500 text-white' : 'bg-gray-700 text-white'}`;
+        flashes++;
+        if (flashes >= 6) {
+          clearInterval(flashInterval);
+          correctButton.className = 'bg-gray-700 text-white font-bold py-2 px-4 rounded';
+        }
+      }, 250);
+    }
+
     function startTimer() {
       timeLeft = 5;
       timerEl.textContent = timeLeft;
@@ -99,12 +115,11 @@
           clearInterval(timer);
           streak = 0;
           streakEl.textContent = streak;
-          displayProblem();
+          flashRed();
+          setTimeout(displayProblem, 1500);
         }
       }, 1000);
     }
 
     displayProblem();
   </script>
-</body>
-</html>
