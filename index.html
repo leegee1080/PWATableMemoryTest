@@ -36,6 +36,7 @@
     let timeLeft = 5;
     let correctButton = null;
     let currentProblem = null;
+    let isProcessing = false;
 
     function generateProblem() {
       const num1 = Math.floor(Math.random() * 9) + 1;
@@ -57,6 +58,7 @@
       questionEl.textContent = `${num1} ${op} ${num2} = ?`;
       answersEl.innerHTML = '';
       correctButton = null;
+      isProcessing = false;
       answers.forEach(answer => {
         const btn = document.createElement('button');
         btn.textContent = answer;
@@ -69,6 +71,8 @@
     }
 
     function handleAnswer(selected, correct) {
+      if (isProcessing) return; // Prevent multiple clicks during processing
+      isProcessing = true;
       clearInterval(timer);
       const { num1, num2, op, correctAnswer } = currentProblem;
       questionEl.textContent = `${num1} ${op} ${num2} = ${correctAnswer}`;
@@ -119,8 +123,9 @@
       timer = setInterval(() => {
         timeLeft--;
         timerEl.textContent = timeLeft;
-        if (timeLeft <= 0) {
+        if (timeLeft <= 0 && !isProcessing) {
           clearInterval(timer);
+          isProcessing = true;
           streak = 0;
           streakEl.textContent = streak;
           const { num1, num2, op, correctAnswer } = currentProblem;
