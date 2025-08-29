@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -41,6 +42,9 @@
     let correctButton = null;
     let currentProblem = null;
     let isProcessing = false;
+    let repeatProblem = null;
+    let repeatCount = 0;
+    let correctInRow = 0;
 
     function generateProblem() {
       const num1 = Math.floor(Math.random() * 9) + 1;
@@ -56,8 +60,26 @@
       return { num1, num2, op, correctAnswer, answers };
     }
 
+    function shuffleAnswers(problem) {
+      const { correctAnswer } = problem;
+      const answers = [correctAnswer];
+      while (answers.length < 10) {
+        const wrong = correctAnswer + (Math.floor(Math.random() * 20) - 10);
+        if (wrong > 0 && !answers.includes(wrong)) answers.push(wrong);
+      }
+      answers.sort(() => Math.random() - 0.5);
+      return { ...problem, answers };
+    }
+
     function displayProblem() {
-      currentProblem = generateProblem();
+      if (repeatProblem && repeatCount > 0) {
+        currentProblem = shuffleAnswers(repeatProblem);
+      } else {
+        currentProblem = generateProblem();
+        repeatProblem = null;
+        repeatCount = 0;
+        correctInRow = 0;
+      }
       const { num1, num2, op, correctAnswer, answers } = currentProblem;
       questionEl.textContent = `${num1} ${op} ${num2} = ?`;
       answersEl.innerHTML = '';
@@ -82,16 +104,31 @@
       questionEl.textContent = `${num1} ${op} ${num2} = ${correctAnswer}`;
       if (selected === correct) {
         streak++;
+        correctInRow++;
         if (streak > highScore) {
           highScore = streak;
           highScoreEl.textContent = highScore;
         }
         streakEl.textContent = streak;
+        if (correctInRow >= 5) {
+          repeatProblem = null;
+          repeatCount = 0;
+          correctInRow = 0;
+        } else if (repeatProblem) {
+          repeatCount--;
+        }
         flashGreen();
         setTimeout(displayProblem, 1500);
       } else {
         streak = 0;
+        correctInRow = 0;
         streakEl.textContent = streak;
+        if (!repeatProblem) {
+          repeatProblem = currentProblem;
+          repeatCount = 5;
+        } else {
+          repeatCount += 5;
+        }
         flashRed();
         setTimeout(displayProblem, 1500);
       }
@@ -135,9 +172,16 @@
           clearInterval(timer);
           isProcessing = true;
           streak = 0;
+          correctInRow = 0;
           streakEl.textContent = streak;
           const { num1, num2, op, correctAnswer } = currentProblem;
           questionEl.textContent = `${num1} ${op} ${num2} = ${correctAnswer}`;
+          if (!repeatProblem) {
+            repeatProblem = currentProblem;
+            repeatCount = 5;
+          } else {
+            repeatCount += 5;
+          }
           flashRed();
           setTimeout(displayProblem, 1500);
         }
@@ -146,3 +190,5 @@
 
     displayProblem();
   </script>
+</body>
+</html>
